@@ -304,6 +304,8 @@ class Avatar:
             os.remove(f"{self.avatar_path}/temp.mp4")
             shutil.rmtree(f"{self.avatar_path}/tmp")
             print(f"result is save to {output_vid}")
+            print("\n")
+            return output_vid
         print("\n")
 
 
