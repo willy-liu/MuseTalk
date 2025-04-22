@@ -59,9 +59,10 @@ class Avatar:
         self.avatar_id = avatar_id
         self.video_path = video_path
         self.bbox_shift = bbox_shift
+        self.args = args
         # 根据版本设置不同的基础路径
-        if args.version == "v15":
-            self.base_path = f"./results/{args.version}/avatars/{avatar_id}"
+        if self.args.version == "v15":
+            self.base_path = f"./results/{self.args.version}/avatars/{avatar_id}"
         else:  # v1
             self.base_path = f"./results/avatars/{avatar_id}"
             
@@ -77,7 +78,7 @@ class Avatar:
             "avatar_id": avatar_id,
             "video_path": video_path,
             "bbox_shift": bbox_shift,
-            "version": args.version
+            "version": self.args.version
         }
         self.preparation = preparation
         self.batch_size = batch_size
@@ -172,8 +173,8 @@ class Avatar:
             if bbox == coord_placeholder:
                 continue
             x1, y1, x2, y2 = bbox
-            if args.version == "v15":
-                y2 = y2 + args.extra_margin
+            if self.args.version == "v15":
+                y2 = y2 + self.args.extra_margin
                 y2 = min(y2, frame.shape[0])
                 coord_list[idx] = [x1, y1, x2, y2]  # 更新coord_list中的bbox
             crop_frame = frame[y1:y2, x1:x2]
@@ -191,8 +192,8 @@ class Avatar:
             cv2.imwrite(f"{self.full_imgs_path}/{str(i).zfill(8)}.png", frame)
 
             x1, y1, x2, y2 = self.coord_list_cycle[i]
-            if args.version == "v15":
-                mode = args.parsing_mode
+            if self.args.version == "v15":
+                mode = self.args.parsing_mode
             else:
                 mode = "raw"
             mask, crop_box = get_image_prepare_material(frame, [x1, y1, x2, y2], fp=fp, mode=mode)
@@ -249,8 +250,8 @@ class Avatar:
             whisper,
             librosa_length,
             fps=fps,
-            audio_padding_length_left=args.audio_padding_length_left,
-            audio_padding_length_right=args.audio_padding_length_right,
+            audio_padding_length_left=self.args.audio_padding_length_left,
+            audio_padding_length_right=self.args.audio_padding_length_right,
         )
         print(f"processing audio:{audio_path} costs {(time.time() - start_time) * 1000}ms")
         ############################################## inference batch by batch ##############################################
@@ -281,7 +282,7 @@ class Avatar:
         # Close the queue and sub-thread after all tasks are completed
         process_thread.join()
 
-        if args.skip_save_images is True:
+        if self.args.skip_save_images is True:
             print('Total process time of {} frames without saving images = {}s'.format(
                 video_num,
                 time.time() - start_time))
@@ -290,7 +291,7 @@ class Avatar:
                 video_num,
                 time.time() - start_time))
 
-        if out_vid_name is not None and args.skip_save_images is False:
+        if out_vid_name is not None and self.args.skip_save_images is False:
             # optional
             cmd_img2video = f"ffmpeg -y -v warning -r {fps} -f image2 -i {self.avatar_path}/tmp/%08d.png -vcodec libx264 -vf format=yuv420p -crf 18 {self.avatar_path}/temp.mp4"
             print(cmd_img2video)
